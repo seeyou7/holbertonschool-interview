@@ -1,61 +1,48 @@
 #!/usr/bin/python3
+"""
+Task - Script that reads stdin line by line and computes metrics
+"""
+
 import sys
 
-# Dictionary to hold counts for each status code
-status_codes = {
-    "200": 0,
-    "301": 0,
-    "400": 0,
-    "401": 0,
-    "403": 0,
-    "404": 0,
-    "405": 0,
-    "500": 0
-}
 
-total_size = 0
-line_count = 0
+if __name__ == "__main__":
+    st_code = {"200": 0,
+               "301": 0,
+               "400": 0,
+               "401": 0,
+               "403": 0,
+               "404": 0,
+               "405": 0,
+               "500": 0}
+    count = 1
+    file_size = 0
 
+    def parse_line(line):
+        """ Read, parse and grab data"""
+        try:
+            parsed_line = line.split()
+            status_code = parsed_line[-2]
+            if status_code in st_code.keys():
+                st_code[status_code] += 1
+            return int(parsed_line[-1])
+        except Exception:
+            return 0
 
-def print_statistics():
-    """Print accumulated file size and status code metrics."""
-    print(f"File size: {total_size}")
-    for code in sorted(status_codes.keys()):
-        if status_codes[code] > 0:
-            print(f"{code}: {status_codes[code]}")
+    def print_stats():
+        """print stats in ascending order"""
+        print("File size: {}".format(file_size))
+        for key in sorted(st_code.keys()):
+            if st_code[key]:
+                print("{}: {}".format(key, st_code[key]))
 
-
-def process_line(line):
-    """Process a log line to extract status code and file size."""
-    global total_size
     try:
-        # Split the line by space and validate the format
-        parts = line.split()
-        if len(parts) == 9 and parts[5] == '"GET' and parts[6] == '/projects/260' and parts[7] == 'HTTP/1.1"':
-            status_code = parts[-2]
-            file_size = int(parts[-1])
-
-            # Update status code count and total file size if valid
-            if status_code in status_codes:
-                status_codes[status_code] += 1
-                total_size += file_size
-    except (IndexError, ValueError):
-        # Ignore lines not match the expected format or have invalid values
-        pass
-
-
-try:
-    for line in sys.stdin:
-        process_line(line)
-        line_count += 1
-
-        # Print stats every 10 lines
-        if line_count % 10 == 0:
-            print_statistics()
-except KeyboardInterrupt:
-    # Print stats upon keyboard interruption (CTRL+C)
-    print_statistics()
-    sys.exit(0)
-
-# Final statistics if end of input is reached
-print_statistics()
+        for line in sys.stdin:
+            file_size += parse_line(line)
+            if count % 10 == 0:
+                print_stats()
+            count += 1
+    except KeyboardInterrupt:
+        print_stats()
+        raise
+    print_stats()
