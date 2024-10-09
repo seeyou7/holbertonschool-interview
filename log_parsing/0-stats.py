@@ -16,12 +16,14 @@ status_codes = {
 total_size = 0
 line_count = 0
 
+
 def print_statistics():
     """Print accumulated file size and status code metrics."""
     print(f"File size: {total_size}")
     for code in sorted(status_codes.keys()):
         if status_codes[code] > 0:
             print(f"{code}: {status_codes[code]}")
+
 
 def process_line(line):
     """Process a log line to extract status code and file size."""
@@ -32,13 +34,15 @@ def process_line(line):
         if len(parts) == 9 and parts[5] == '"GET' and parts[6] == '/projects/260' and parts[7] == 'HTTP/1.1"':
             status_code = parts[-2]
             file_size = int(parts[-1])
-            
+
             # Update status code count and total file size if valid
             if status_code in status_codes:
                 status_codes[status_code] += 1
                 total_size += file_size
     except (IndexError, ValueError):
-        pass  # Ignore lines that do not match the expected format or have invalid values
+        # Ignore lines not match the expected format or have invalid values
+        pass
+
 
 try:
     for line in sys.stdin:
