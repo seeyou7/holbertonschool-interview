@@ -1,50 +1,90 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "sort.h"
 
 /**
- * merge_sort - sorts via top-down merge (divide & conquer!)
- * @array: the int array to sort in place
- * @size: size of array
+ * merge - Merges two subarrays of array[]
+ * @array: The array to be sorted
+ * @temp: Temporary array to hold sorted elements
+ * @left: Left subarray
+ * @mid: Middle point
+ * @right: Right subarray
+ */
+void merge(int *array, int *temp, size_t left, size_t mid, size_t right)
+{
+	size_t i = left, j = mid, k = left;
+
+	printf("Merging...\n[left]: ");
+	print_array(array + left, mid - left);
+	printf("[right]: ");
+	print_array(array + mid, right - mid);
+
+	while (i < mid && j < right)
+	{
+		if (array[i] <= array[j])
+		{
+			temp[k++] = array[i++];
+		}
+		else
+		{
+			temp[k++] = array[j++];
+		}
+	}
+
+	while (i < mid)
+	{
+		temp[k++] = array[i++];
+	}
+
+	while (j < right)
+	{
+		temp[k++] = array[j++];
+	}
+
+	for (i = left; i < right; i++)
+	{
+		array[i] = temp[i];
+	}
+
+	printf("[Done]: ");
+	print_array(array + left, right - left);
+}
+
+/**
+ * merge_sort_recursive - Helper function to implement merge sort recursively
+ * @array: The array to be sorted
+ * @temp: Temporary array to hold sorted elements
+ * @left: Left index
+ * @right: Right index
+ */
+void merge_sort_recursive(int *array, int *temp, size_t left, size_t right)
+{
+	if (right - left > 1)
+	{
+		size_t mid = left + (right - left) / 2;
+
+		merge_sort_recursive(array, temp, left, mid);
+		merge_sort_recursive(array, temp, mid, right);
+		merge(array, temp, left, mid, right);
+	}
+}
+
+/**
+ * merge_sort - Sorts an array of integers in ascending order
+ * @array: The array to be sorted
+ * @size: Number of elements in @array
  */
 void merge_sort(int *array, size_t size)
 {
-	int *copy = malloc(sizeof(*copy) * size), *end = array + size;
+	int *temp;
 
-	if (copy && size > 1)
-	{
-		while (array < end)
-			*copy++ = *array++;
-		sort(array - size, copy - size, size);
-	}
-	copy ? free(size > 1 ? copy - size : copy) : (void)0;
-}
+	if (array == NULL || size < 2)
+		return;
 
-/**
- * sort - recursively sorts via top-down merge (divide & conquer!)
- * @A: the int array to sort in place
- * @B: copy of array for O(n) space
- * @size: size of arrays
- */
-void sort(int *A, int *B, size_t size)
-{
-	if (size > 1)
-		sort(B, A, size / 2),
-		sort(B + size / 2, A + size / 2, size - size / 2),
-		merge(A, B, size);
-}
+	temp = malloc(sizeof(int) * size);
+	if (temp == NULL)
+		return;
 
-/**
- * merge - merges two sorted sub-arrays
- * @A: the int array to sort in place
- * @B: copy of array for O(n) space
- * @size: size of arrays
- */
-void merge(int *A, int *B, size_t size)
-{
-	int *i = B, *j = B + size / 2;
-
-	printf("Merging...\n[left]: "), print_array(B, size / 2);
-	printf("[right]: "), print_array(B + size / 2, size - size / 2);
-	while (i < B + size / 2 || j < B + size)
-		*A++ = i < B + size / 2 && (j >= B + size || *i <= *j) ? *i++ : *j++;
-	printf("[Done]: "), print_array(A - size, size);
+	merge_sort_recursive(array, temp, 0, size);
+	free(temp);
 }
